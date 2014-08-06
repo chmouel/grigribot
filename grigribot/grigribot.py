@@ -52,6 +52,12 @@ general_opts = [
                help='Directory where to store the logs.')
 ]
 
+cli_opts = [
+    cfg.BoolOpt('debug',
+                short='d',
+                default=False,
+                help='Print more verbose output.'),
+]
 
 def list_opts():
     return [('general', general_opts),
@@ -61,6 +67,7 @@ def list_opts():
 CONF = cfg.CONF
 cfg.CONF.register_opts(general_opts, group='general')
 cfg.CONF.register_opts(gerrit_opts, group='gerrit')
+cfg.CONF.register_cli_opts(cli_opts, group='cli')
 
 
 class GrigriBot(object):
@@ -152,7 +159,7 @@ class GrigriBot(object):
                 self.connect()
             try:
                 event = self.gerrit.getEvent()
-                self.log.info('Received event: %s' % event)
+                self.log.debug('Received event: %s' % event)
                 self._read(event)
             except Exception:
                 self.log.exception('Exception encountered in event loop')
@@ -162,32 +169,16 @@ class GrigriBot(object):
                     self.connected = False
 
 
-def setup_logging():
-    logging.basicConfig(level=logging.INFO)
-
-
-def parse_commandline_options(args=None):
-    if args is None:
-        args = sys.argv[1:]
-
+def main():
     if os.path.exists("%s/etc/grigribot.ini" % BASEDIR):
         default_config_file = "%s/etc/grigribot.ini" % BASEDIR
     else:
         default_config_file = "/etc/grigribot/grigribot.conf"
 
-    parser = argparse.ArgumentParser(prog="grigribot")
-    parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                        action="store_true")
-    parser.add_argument("-f", "--config-file", help="Config file",
-                        default=default_config_file)
-    return parser.parse_args(args)
+    CONF(default_config_files=[default_config_file])
+    logging_level = CONF.cli.debug and logging.DEBUG or logging.INFO
+    logging.basicConfig(level=logging_level)
 
-
-def main():
-    args = parse_commandline_options()
-    CONF(default_config_files=[args.config_file])
-
-    setup_logging()
     k = GrigriBot()
     k.run()
 
