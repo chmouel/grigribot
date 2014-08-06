@@ -16,6 +16,9 @@
 # Directory where to store the logs. (string value)
 #static_dir =
 
+# Wether to vote back the result. (boolean value)
+#voting_jobs = false
+
 # Username to connect to. (list value)
 #watched_projects =
 

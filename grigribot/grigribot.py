@@ -42,6 +42,8 @@ general_opts = [
                help=('Script to spawn.')),
     cfg.ListOpt('watched_projects', default=[],
                 help='Username to connect to.'),
+    cfg.BoolOpt('voting_jobs', default=False,
+                help='Wether to vote back the result.'),
     cfg.StrOpt('http_server', default="",
                help='HTTP server address to expose the link to.'),
     cfg.StrOpt('static_dir', default="",
@@ -73,6 +75,7 @@ class GrigriBot(object):
             CONF.general.run_script)
         self.connected = False
         self.watched_projects = CONF.general.watched_projects
+        self.voting_jobs = CONF.general.voting_jobs
 
     def connect(self):
         # Import here because it needs to happen after daemonization
@@ -111,21 +114,26 @@ class GrigriBot(object):
             self.http_server, data['change']['number'],
             data['patchSet']['number'])
 
-        self.gerrit.review(data['change']['project'],
-                           "%s,%s" % (data['change']['number'],
-                                      data['patchSet']['number']),
-                           "run_tests.sh: %s: %s" % (rets, url),
-                           action={'verified': retvote},)
+        if self.voting_jobs:
+            self.gerrit.review(data['change']['project'],
+                               "%s,%s" % (data['change']['number'],
+                                          data['patchSet']['number']),
+                               "run_tests.sh: %s: %s" % (rets, url),
+                               action={'verified': retvote},)
 
     def _read(self, data):
-        if data['type'] != 'patchset-created':
-            return
+        check = False
+        if (data['type'] == 'comment-added' and
+                data['comment'].endswith('\nrecheck')):
+            check = True
+        elif data['type'] == 'patchset-created':
+            check = True
 
         if data['change']['project'] not in self.watched_projects:
-            return
+            check = False
 
-        self.log.info('Receiving event notification: %r' % data)
-        self.run_command(data)
+        if check:
+            self.log.info('Receiving event notification: %r' % data)
 
     def run(self):
         while True:
