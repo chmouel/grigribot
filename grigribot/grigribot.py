@@ -92,16 +92,23 @@ class GrigriBot(object):
             time.sleep(1)
 
     def run_command(self, data):
+        if 'change' not in data:
+            return
+
         output_dir = "%s/%s/%s" % (self.static_dir,
                                    data['change']['number'],
                                    data['patchSet']['number'])
-        os.makedirs(output_dir)
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
         env = {'CHANGE_ID': data['change']['number'],
                'LOG_DIR': output_dir,
                'REF_ID': data['patchSet']['ref'],
                'AUTHOR': data['patchSet']['author']['email']}
         ret = subprocess.call([self.run_script], env=env, shell=True)
+        self.log.info("script: %s has exited with return value of %s",
+                      self.run_script, ret)
 
         if ret != 0:
             rets = "FAILED"
