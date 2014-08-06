@@ -44,6 +44,8 @@ general_opts = [
                 help='Username to connect to.'),
     cfg.BoolOpt('voting_jobs', default=False,
                 help='Wether to vote back the result.'),
+    cfg.StrOpt('recheck_word', default="recheck",
+               help='Recheck words to rekick the test.'),
     cfg.StrOpt('http_server', default="",
                help='HTTP server address to expose the link to.'),
     cfg.StrOpt('static_dir', default="",
@@ -75,6 +77,7 @@ class GrigriBot(object):
             CONF.general.run_script)
         self.connected = False
         self.watched_projects = CONF.general.watched_projects
+        self.recheck_word = CONF.general.recheck_word
         self.voting_jobs = CONF.general.voting_jobs
 
     def connect(self):
@@ -131,7 +134,7 @@ class GrigriBot(object):
     def _read(self, data):
         check = False
         if (data['type'] == 'comment-added' and
-                data['comment'].endswith('\nrecheck')):
+                data['comment'].endswith('\n' + self.recheck_word)):
             check = True
         elif data['type'] == 'patchset-created':
             check = True

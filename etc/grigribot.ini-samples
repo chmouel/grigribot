@@ -10,6 +10,9 @@
 # HTTP server address to expose the link to. (string value)
 #http_server =
 
+# Recheck words to rekick the test. (string value)
+#recheck_word = recheck
+
 # Script to spawn. (string value)
 #run_script =
 
