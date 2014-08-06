@@ -144,6 +144,7 @@ class GrigriBot(object):
 
         if check:
             self.log.info('Receiving event notification: %r' % data)
+            self.run_command(data)
 
     def run(self):
         while True:
