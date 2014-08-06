@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = grigribot
+omit = grigribot/tests/*,grigribot/openstack/*
+
+[report]
+ignore-errors = True

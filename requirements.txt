@@ -1,0 +1,5 @@
+pbr>=0.6,!=0.7,<1.0
+Babel>=1.3
+-e git+http://github.com/openstack/oslo.config.git@master#egg=oslo.config
+
+gerritlib
