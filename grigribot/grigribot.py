@@ -95,9 +95,6 @@ class GrigriBot(object):
             time.sleep(1)
 
     def run_command(self, data):
-        if 'change' not in data:
-            return
-
         output_dir = "%s/%s/%s" % (self.static_dir,
                                    data['change']['number'],
                                    data['patchSet']['number'])
@@ -132,6 +129,9 @@ class GrigriBot(object):
                                action={'verified': retvote},)
 
     def _read(self, data):
+        if 'change' not in data:
+            return
+
         check = False
         if (data['type'] == 'comment-added' and
                 data['comment'].endswith('\n' + self.recheck_word)):
